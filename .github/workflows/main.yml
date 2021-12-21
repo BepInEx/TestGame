@@ -30,7 +30,7 @@ jobs:
           unity-authenticator-key: ${{ secrets.UNITY_AUTHENTICATOR_KEY }}
 
       - name: Build Unity
-        uses: kuler90/build-unity@v1
+        uses: js6pak/build-unity@master
         with:
           build-target: Linux64
           build-path: ./out/TestGame.exe
