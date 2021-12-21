@@ -1,0 +1,22 @@
+name: CI
+
+on: [ push ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        unity-version: [2020.3.25, 2019.4.34, 2018.4.36, 2017.4.40]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: pCYSl5EDgo/setup-unity@master
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          has-il2cpp: true
+
+      - run: /opt/Unity/Editor/Unity -quit -batchMode -logFile -noGraphics -buildWindows64Player out/TestGame.exe
