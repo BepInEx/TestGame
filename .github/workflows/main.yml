@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        unity-version: [2020.3.25, 2019.4.34, 2018.4.36, 2017.4.40]
+        unity-version: [2020.3.25f1, 2019.4.34f1, 2018.4.36f1, 2017.4.40f1]
 
     runs-on: ${{ matrix.os }}
 
