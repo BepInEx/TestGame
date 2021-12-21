@@ -7,16 +7,20 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        unity-version: [2020.3.25f1, 2019.4.34f1, 2018.4.36f1, 2017.4.40f1]
+        unity-version: [2020.3.25-9b9180224418, 2019.4.34-6a9faed444f2, 2018.4.36-6cd387d23174, 2017.4.40-6e14067f8a9a]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
 
-      - uses: pCYSl5EDgo/setup-unity@master
+      - id: setup-unity
+        uses: kuler90/setup-unity@v1
         with:
           unity-version: ${{ matrix.unity-version }}
-          has-il2cpp: true
 
-      - run: /opt/Unity/Editor/Unity -quit -batchMode -logFile -noGraphics -buildWindows64Player out/TestGame.exe
+      - name: Build Unity
+        uses: kuler90/build-unity@v1
+        with:
+          build-target: Windows
+          build-path: ./out/TestGame.exe
