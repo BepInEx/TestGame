@@ -32,5 +32,5 @@ jobs:
       - name: Build Unity
         uses: kuler90/build-unity@v1
         with:
-          build-target: Win64
+          build-target: Linux64
           build-path: ./out/TestGame.exe
