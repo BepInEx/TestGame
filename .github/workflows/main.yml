@@ -17,6 +17,11 @@ jobs:
         include:
           - os: ubuntu-latest
             unity-version: 2018.4.36f1 # TODO 2017.4.40f1
+            scripting-backend: Mono2x
+            arch: x32
+          - os: ubuntu-latest
+            unity-version: 2018.4.36f1 # TODO 2017.4.40f1
+            scripting-backend: IL2CPP
             arch: x32
 
     runs-on: ${{ matrix.os }}
@@ -40,6 +45,7 @@ jobs:
         shell: bash
         run: |
           echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
+          echo "::set-output name=scripting-backend::$([ "${{ matrix.scripting-backend }}" == "Mono2x" ] && echo "Mono" || echo "IL2CPP")"
 
       - name: Build Unity
         uses: js6pak/build-unity@master
@@ -50,5 +56,5 @@ jobs:
     
       - uses: actions/upload-artifact@v2
         with:
-          name: TestGame ${{ steps.set-platform.outputs.platform }} ${{ matrix.unity-version }}
+          name: TestGame ${{ steps.set-platform.outputs.scripting-backend }} ${{ steps.set-platform.outputs.platform }} ${{ matrix.unity-version }}
           path: out
