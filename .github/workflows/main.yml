@@ -20,8 +20,8 @@ jobs:
         include:
           - os: ubuntu-latest
             unity-version: 2018.4.36f1 # TODO 2017.4.40f1
-            scripting-backend: Mono2x
             arch: x32
+            scripting-backend: Mono2x          
 
     runs-on: ${{ matrix.os }}
 
