@@ -14,14 +14,13 @@ jobs:
         exclude:
           - os: ubuntu-latest
             arch: x32
+          - os: ubuntu-latest
+            unity-version: 2018.4.36f1
+            scripting-backend: IL2CPP
         include:
           - os: ubuntu-latest
             unity-version: 2018.4.36f1 # TODO 2017.4.40f1
             scripting-backend: Mono2x
-            arch: x32
-          - os: ubuntu-latest
-            unity-version: 2018.4.36f1 # TODO 2017.4.40f1
-            scripting-backend: IL2CPP
             arch: x32
 
     runs-on: ${{ matrix.os }}
