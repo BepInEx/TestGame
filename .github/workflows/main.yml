@@ -32,5 +32,5 @@ jobs:
       - name: Build Unity
         uses: js6pak/build-unity@master
         with:
-          build-target: Linux64
+          build-target: StandaloneLinux64
           build-path: ./out/TestGame.exe
