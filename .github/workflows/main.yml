@@ -28,12 +28,19 @@ jobs:
 
     steps:
       - id: set-vars
-        shell: bash
-        run: |
-          echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
-          echo "::set-output name=scripting-backend::$([ "${{ matrix.scripting-backend }}" == "Mono2x" ] && echo "Mono" || echo "IL2CPP")"
-          echo "::set-output name=module::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "linux-il2cpp" || echo "windows-il2cpp")"
-          echo "::set-output name=extension::$([ "${{ matrix.os }}" == "windows-latest" ] && echo ".exe" || echo "")"
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const os = ${{ matrix.os }};
+            const arch = ${{ matrix.arch }};
+            const scriptingBackend = ${{ matrix.scripting-backend }};
+            const unityVersion = ${{ matrix.unity-version }};
+            const major = Number.parseInt(unityVersion.split(".")[0]);
+
+            core.setOutput("platform", (os === "ubuntu-latest" ? "Linux" : "Windows") + (arch === "x64" ? "64" : ""));
+            core.setOutput("scripting-backend", scriptingBackend === "Mono2x" ? "Mono" : "IL2CPP");
+            core.setOutput("module", os === "ubuntu-latest" ? (major >= 2019 ? "linux-il2cpp" : "") : "windows-il2cpp");
+            core.setOutput("extension", os === "windows-latest" ? ".exe" : "");
 
       - uses: actions/checkout@v2
 
