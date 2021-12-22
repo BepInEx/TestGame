@@ -33,6 +33,7 @@ jobs:
           echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
           echo "::set-output name=scripting-backend::$([ "${{ matrix.scripting-backend }}" == "Mono2x" ] && echo "Mono" || echo "IL2CPP")"
           echo "::set-output name=module::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "linux-il2cpp" || echo "windows-il2cpp")"
+          echo "::set-output name=extension::$([ "${{ matrix.os }}" == "windows-latest" ] && echo ".exe" || echo "")"
 
       - uses: actions/checkout@v2
 
@@ -54,7 +55,7 @@ jobs:
         with:
           build-target: Standalone${{ steps.set-vars.outputs.platform }}
           build-scripting-backend: ${{ matrix.scripting-backend }}
-          build-path: ./out/TestGame.exe
+          build-path: ./out/TestGame${{ steps.set-vars.outputs.extension }}
     
       - uses: actions/upload-artifact@v2
         with:
