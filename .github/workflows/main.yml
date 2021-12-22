@@ -8,9 +8,12 @@ jobs:
       fail-fast: false
       matrix:
         # os: [ubuntu-latest, windows-latest]    
-        # unity-version: [2020.3.25f1, 2019.4.34f1, 2018.4.36f1, 2017.4.40f1]
         os: [ubuntu-latest]    
-        unity-version: [2018.4.36f1]
+        unity-version: [2020.3.25f1, 2019.4.34f1, 2018.4.36f1] # TODO 2017.4.40f1
+        arch: [x64, x32]
+        exclude:
+          - os: ubuntu-latest
+            arch: x32
 
     runs-on: ${{ matrix.os }}
 
@@ -34,3 +37,7 @@ jobs:
         with:
           build-target: StandaloneLinux64
           build-path: ./out/TestGame.exe
+    
+      - uses: actions/upload-artifact@v2
+        with:
+          path: out
