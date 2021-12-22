@@ -7,12 +7,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [ubuntu-latest, windows-latest]    
-        os: [ubuntu-latest]    
-        unity-version: [2020.3.25f1, 2019.4.34f1, 2018.4.36f1] # TODO 2017.4.40f1
+        os: [ubuntu-latest, windows-latest]    
+        unity-version: [2020.3.25f1, 2019.4.34f1, 2018.4.36f1] # TODO 2017.4.40f1, license no worky
         arch: [x64, x32]
         exclude:
           - os: ubuntu-latest
+            arch: x32
+        include:
+          - os: ubuntu-latest
+            unity-version: 2018.4.36f1 # TODO 2017.4.40f1
             arch: x32
 
     runs-on: ${{ matrix.os }}
@@ -32,12 +35,17 @@ jobs:
           unity-password: ${{ secrets.UNITY_PASSWORD }}
           unity-authenticator-key: ${{ secrets.UNITY_AUTHENTICATOR_KEY }}
 
+      - id: set-platform
+        run: |
+          echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
+
       - name: Build Unity
         uses: js6pak/build-unity@master
         with:
-          build-target: StandaloneLinux64
+          build-target: Standalone${{ steps.set-platform.outputs.platform }}
           build-path: ./out/TestGame.exe
     
       - uses: actions/upload-artifact@v2
         with:
+          name: TestGame ${{ steps.set-platform.outputs.platform }} ${{ matrix.unity-version }}
           path: out
