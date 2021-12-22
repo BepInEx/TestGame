@@ -36,6 +36,7 @@ jobs:
           unity-authenticator-key: ${{ secrets.UNITY_AUTHENTICATOR_KEY }}
 
       - id: set-platform
+        shell: bash
         run: |
           echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
 
