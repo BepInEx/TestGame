@@ -39,7 +39,7 @@ jobs:
 
             core.setOutput("platform", (os === "ubuntu-latest" ? "Linux" : "Windows") + (arch === "x64" ? "64" : ""));
             core.setOutput("scripting-backend", scriptingBackend === "Mono2x" ? "Mono" : "IL2CPP");
-            core.setOutput("module", os === "ubuntu-latest" ? (major >= 2019 ? "linux-il2cpp" : "") : "windows-il2cpp");
+            core.setOutput("module", scriptingBackend === "IL2CPP" ? (os === "ubuntu-latest" ? (major >= 2019 ? "linux-il2cpp" : "") : "windows-il2cpp") : "");
             core.setOutput("extension", os === "windows-latest" ? ".exe" : "");
 
       - uses: actions/checkout@v2
