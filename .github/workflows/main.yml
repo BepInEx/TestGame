@@ -27,12 +27,20 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - id: set-vars
+        shell: bash
+        run: |
+          echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
+          echo "::set-output name=scripting-backend::$([ "${{ matrix.scripting-backend }}" == "Mono2x" ] && echo "Mono" || echo "IL2CPP")"
+          echo "::set-output name=module::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "linux-il2cpp" || echo "windows-il2cpp")"
+
       - uses: actions/checkout@v2
 
       - id: setup-unity
         uses: kuler90/setup-unity@v1
         with:
           unity-version: ${{ matrix.unity-version }}
+          unity-modules: ${{ steps.set-vars.outputs.module }}
 
       - name: Activate Unity
         uses: js6pak/activate-unity@master
@@ -41,20 +49,14 @@ jobs:
           unity-password: ${{ secrets.UNITY_PASSWORD }}
           unity-authenticator-key: ${{ secrets.UNITY_AUTHENTICATOR_KEY }}
 
-      - id: set-platform
-        shell: bash
-        run: |
-          echo "::set-output name=platform::$([ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "Linux" || echo "Windows")$([ "${{ matrix.arch }}" == "x64" ] && echo "64" || echo "")"
-          echo "::set-output name=scripting-backend::$([ "${{ matrix.scripting-backend }}" == "Mono2x" ] && echo "Mono" || echo "IL2CPP")"
-
       - name: Build Unity
         uses: js6pak/build-unity@master
         with:
-          build-target: Standalone${{ steps.set-platform.outputs.platform }}
+          build-target: Standalone${{ steps.set-vars.outputs.platform }}
           build-scripting-backend: ${{ matrix.scripting-backend }}
           build-path: ./out/TestGame.exe
     
       - uses: actions/upload-artifact@v2
         with:
-          name: TestGame ${{ steps.set-platform.outputs.scripting-backend }} ${{ steps.set-platform.outputs.platform }} ${{ matrix.unity-version }}
+          name: TestGame ${{ steps.set-vars.outputs.scripting-backend }} ${{ steps.set-vars.outputs.platform }} ${{ matrix.unity-version }}
           path: out
