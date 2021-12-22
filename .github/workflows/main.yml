@@ -31,10 +31,10 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const os = ${{ matrix.os }};
-            const arch = ${{ matrix.arch }};
-            const scriptingBackend = ${{ matrix.scripting-backend }};
-            const unityVersion = ${{ matrix.unity-version }};
+            const os = "${{ matrix.os }}";
+            const arch = "${{ matrix.arch }}";
+            const scriptingBackend = "${{ matrix.scripting-backend }}";
+            const unityVersion = "${{ matrix.unity-version }}";
             const major = Number.parseInt(unityVersion.split(".")[0]);
 
             core.setOutput("platform", (os === "ubuntu-latest" ? "Linux" : "Windows") + (arch === "x64" ? "64" : ""));
