@@ -71,7 +71,7 @@ jobs:
       - shell: bash
         run: |
           cd out
-          zip -r "${{ steps.set-vars.outputs.scripting-backend }} ${{ steps.set-vars.outputs.platform }} ${{ matrix.unity-version }}.zip" .
+          7z a -tzip "${{ steps.set-vars.outputs.scripting-backend }} ${{ steps.set-vars.outputs.platform }} ${{ matrix.unity-version }}.zip" .
 
       - uses: actions/upload-artifact@v2
         with:
