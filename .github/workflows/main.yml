@@ -77,3 +77,28 @@ jobs:
         with:
           name: TestGame
           path: out/*.zip
+
+  create_release:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: Collect files
+        id: collect-info
+        run: |
+          mkdir release
+          cd artifacts
+          for i in */; do (cd "${i%/}" && zip -0 -r "../../release/${i%/}.zip" *) & done; wait
+      - name: Create release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: latest
+          title: "Build ${{ github.run_number }}"
+          files: |
+            release/*.zip
