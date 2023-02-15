@@ -1,0 +1,115 @@
+name: Build
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version:
+          - 2020.3.22f1 # Among Us
+          - 2022.2.6f1
+          - 2021.3.18f1
+          - 2020.3.44f1
+          - 2019.4.40f1
+          - 2018.4.36f1
+        target-platform: [ StandaloneWindows64, StandaloneWindows, StandaloneLinux64, StandaloneOSX, Android ]
+        scripting-backend: [ Mono, IL2CPP ]
+
+        exclude:
+          # Unity versions before 2019.3 do not support il2cpp
+          - unity-version: 2018.4.36f1
+            scripting-backend: IL2CPP
+          # https://github.com/game-ci/unity-builder/issues/489
+          - unity-version: 2022.2.6f1
+            target-platform: Android
+        # x32 linux is not supported by game-ci
+        #include:
+        # - unity-version: 2018.4.36f1
+        #   target-platform: StandaloneLinux
+        #   scripting-backend: Mono
+
+    runs-on: ${{
+      (startsWith( matrix.target-platform, 'StandaloneWindows' ) && matrix.scripting-backend == 'IL2CPP') && 'windows-2019' ||
+      (startsWith( matrix.target-platform, 'StandaloneOSX' ) && matrix.scripting-backend == 'IL2CPP') && 'macos-latest' ||
+      'ubuntu-latest'
+      }}
+    name: ${{ matrix.unity-version }} ${{ matrix.target-platform }} ${{ matrix.scripting-backend }}
+
+    steps:
+      - id: set-vars
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const scriptingBackend = "${{ matrix.scripting-backend }}";
+            core.setOutput("scripting-backend", scriptingBackend === "Mono" ? "Mono2x" : scriptingBackend);
+
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key:
+            Library-${{ matrix.target-platform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.target-platform }}-
+            Library-
+
+      - uses: js6pak/unity-builder@main
+        timeout-minutes: 60
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ matrix.unity-version }}
+          targetPlatform: ${{ matrix.target-platform }}
+          versioning: None
+          allowDirtyBuild: true
+          buildName: TestGame
+          buildMethod: UnityBuilderAction.Builder.BuildProject
+          customParameters: -scriptingBackend ${{ steps.set-vars.outputs.scripting-backend }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: TestGame-${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}
+          path: ./build/${{ matrix.target-platform }}
+
+      - shell: bash
+        run: |
+          7z a -tzip "${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}.zip" ./build/${{ matrix.target-platform }}/*
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: TestGame
+          path: "${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}.zip"
+
+  create_release:
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: write
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: Collect files
+        id: collect-info
+        run: |
+          mkdir release
+          cd artifacts
+          for i in */; do (cd "${i%/}" && zip -0 -r "../../release/${i%/}.zip" *) & done; wait
+      - name: Create release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: ${{ github.ref_type != 'tag' }}
+          automatic_release_tag: ${{ github.ref_type != 'tag' && 'latest' || null }}
+          title: ${{ github.ref_type != 'tag' && format('Build {0}', github.run_number) || null }}
+          files: |
+            release/*.zip
